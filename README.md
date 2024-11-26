@@ -1,4 +1,4 @@
-![Bot in Action](https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif)
+![Bot in Action](https://c.tenor.com/yMYZeQwJHGsAAAAd/tenor.gif)
 # Wooper-JS-Discord-Bot
 
 Discord bot made in `Discord.js`, made mostly for browsing Hypixel Skyblock data.
