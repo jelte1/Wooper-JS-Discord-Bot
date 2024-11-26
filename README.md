@@ -6,7 +6,7 @@ Discord bot made in `Discord.js`, made mostly for browsing Hypixel Skyblock data
 
 - **(Hypixel Skyblock) Auctionhouse**
   Browse the Hypixel skyblock auctionhouse, search by name and item specific strings (rarity etc)
-  Generates a Minecraft item image to view the result item
+Generates a Minecraft item image to view the result item
   Navigate results with the 2 buttons
   Displays seller, bin and end date
 - **(Hypixel Skyblock) Skills**
