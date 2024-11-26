@@ -30,7 +30,7 @@ async function registerCommands(rest, commands) {
     const commandData = commands.map(command => command.data.toJSON());
     console.log(`Refreshing ${commandData.length} application (/) commands...`);
     const data = await rest.put(
-        Routes.applicationGuildCommands(process.env.DISCORD_APPLICATION_ID, "531425237988933644"),
+        Routes.applicationCommands(process.env.DISCORD_APPLICATION_ID),
         { body: commandData }
     );
     console.log(`Successfully registered ${data.length} commands.`);
