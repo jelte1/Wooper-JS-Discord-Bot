@@ -1,6 +1,6 @@
 const path = require('path');
 const { createCanvas, registerFont } = require('canvas');
-require('dotenv').config();
+require('dotenv').config({ path: "../.env" });
 
 /**
  * Array mapping Minecraft color codes with their symbols.
@@ -28,6 +28,7 @@ var colorMap = [
   { char: "§e", color: "#FFFF55", shadow: "#3F3F15" },
   { char: "§f", color: "#FFFFFF", shadow: "#3F3F3F" },
   { char: "§l", color: "bold" },
+  { char: "§k", color: "none" },
 ];
 
 // Arbitrary size
@@ -35,8 +36,8 @@ const tempCanvas = createCanvas(1, 1);
 const tempCtx = tempCanvas.getContext('2d');
 
 // Load Minecraft fonts
-const minecraftFont = path.join(__dirname, '..', 'resources/font', 'minecraft.ttf');
-const minecraftBoldFont = path.join(__dirname, '..', 'resources/font', 'minecraftbold.ttf');
+const minecraftFont = path.join(__dirname, '..', 'resources/font', 'MinecraftStandard.otf');
+const minecraftBoldFont = path.join(__dirname, '..', 'resources/font', 'MinecraftStandardBold.otf');
 
 registerFont(minecraftFont, { family: 'Minecraft' });
 registerFont(minecraftBoldFont, { family: 'MinecraftBold' });
@@ -49,11 +50,11 @@ registerFont(minecraftBoldFont, { family: 'MinecraftBold' });
  */
 function generateImage(item_lore) {
   // Padding around text
-  const padding = 15;
+  const padding = 20;
   // Font size for text
   const baseFontSize = 34;
   // Extra space between lines
-  const baseLineSpacing = 5;
+  const baseLineSpacing = 20;
 
   const lines = item_lore.split('\n');
 
@@ -77,7 +78,7 @@ function generateImage(item_lore) {
           isBold = colorEntry.color === "bold";
         }
       } else {
-        tempCtx.font = `${baseFontSize}px ${isBold ? "MinecraftBold" : "Minecraft"}`;
+        tempCtx.font = `${baseFontSize}px ${isBold ? "MinecraftBold" : "Minecraft"}, sans-serif`;
         const metrics = tempCtx.measureText(segment);
 
         // Measure line width
@@ -102,11 +103,11 @@ function generateImage(item_lore) {
   const ctx = canvas.getContext('2d');
 
   // Set background color
-  ctx.fillStyle = '#120714FF'; // Black background
+  ctx.fillStyle = '#120714FF';
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
   // Initial vertical position with padding
-  let verticalPos = padding + 30;
+  let verticalPos = padding + 45;
 
   // Render text line by line
   lines.forEach((line) => {
@@ -121,8 +122,9 @@ function generateImage(item_lore) {
     // Initial horizontal position
     let horizontalPos = padding;
     // Default color
-    let currentColor = { color: "#FFFFFF", shadow: "#000000" };
+    let currentColor = colorMap.find((entry) => entry.char === "§f");
     let isBold = false;
+    let isEmpty = false;
 
     segments.forEach((segment) => {
       if (segment.startsWith("§")) {
@@ -130,17 +132,25 @@ function generateImage(item_lore) {
         if (colorEntry) {
           if (colorEntry.color === "bold") {
             isBold = true;
+            // Skip if color is none
+          } else if (colorEntry.color === "none") {
+            isEmpty = true;
           } else {
             currentColor = colorEntry;
             isBold = false;
+            isEmpty = false;
           }
         }
       } else if (segment.trim() !== "") {
-        ctx.font = `${baseFontSize}px ${isBold ? "MinecraftBold" : "Minecraft"}`;
-
+        // Skip if color is none
+        if (isEmpty) {
+          return;
+        }
+        ctx.font = `${baseFontSize}px ${isBold ? "MinecraftBold" : "Minecraft"}, sans-serif`;
         // Draw shadow
         ctx.fillStyle = currentColor.shadow;
-        ctx.fillText(segment, horizontalPos + 3, verticalPos + 3); // Shadow offset
+        // Shadow offset
+        ctx.fillText(segment, horizontalPos + 4, verticalPos + 4);
 
         // Draw text
         ctx.fillStyle = currentColor.color;
