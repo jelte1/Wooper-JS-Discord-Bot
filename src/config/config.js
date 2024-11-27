@@ -7,6 +7,7 @@ const colors = {
     error: "#FF6F61",
     success: "#6FDA44",
     warning: "#FFC107",
+    COMMON: "#FFFFFF",
     UNCOMMON: "#55FF55",
     RARE: "#5555FF",
     EPIC: "#AA00AA",

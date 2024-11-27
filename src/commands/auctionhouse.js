@@ -249,7 +249,7 @@ function getCachedImageKey(item_lore) {
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('auctionhouse')
+		.setName('auctionhousetest')
 		.setDescription('Browse the Hypixel Skyblock auction house.')
 		.addStringOption(option => option.setName('item').setDescription('Item to find on the Auction House').setMaxLength(2000).setRequired(true))
 		.addStringOption(option => option.setName('item-modifiers').setDescription('Modifiers of the item, like the rarity or the enchantments. Separate multiple by comma.').setRequired(false)),

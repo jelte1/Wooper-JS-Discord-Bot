@@ -1,7 +1,7 @@
-const { Client, Collection, Events, GatewayIntentBits, REST, ActivityType } = require('discord.js');
+const { Client, Collection, Events, GatewayIntentBits, REST } = require('discord.js');
 const fs = require("fs");
 const path = require("path");
-require('dotenv').config();
+require('dotenv').config({ path: "../.env" });
 
 const { fetchAuctionData, loadAuctionData } = require('./commands/auctionhouse.js');
 const { loadCommands, registerCommands, updateStatus} = require('./utils/utils');
