@@ -2,8 +2,6 @@
 
 # Wooper-JS-Discord-Bot
 Discord bot made in `Discord.js`, made mostly for browsing Hypixel Skyblock data.
-## Description
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=jelte1&repo=Wooper-JS-Discord-Bot&theme=tokyonight)](https://github.com/jelte1/Wooper-JS-Discord-Bot)
 
 ## Commands
 
