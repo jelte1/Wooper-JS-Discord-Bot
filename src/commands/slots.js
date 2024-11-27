@@ -9,7 +9,7 @@ let playerData = [];
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('slotstest')
+        .setName('slots')
         .setDescription('Gamble using a slot machine!')
         .addIntegerOption(option => option.setName('amount').setDescription('Amount of money to gamble.').setRequired(true)),
 

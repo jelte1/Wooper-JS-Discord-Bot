@@ -21,7 +21,7 @@ function generatePercentageBar(percentage) {
 
 module.exports = {
   data: new SlashCommandBuilder()
-      .setName('skillstest')
+      .setName('skills')
       .setDescription('View Hypixel Skyblock player skills')
       .addStringOption(option =>
           option.setName('username')

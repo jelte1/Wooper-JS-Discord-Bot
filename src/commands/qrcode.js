@@ -6,7 +6,7 @@ const { generateUUID } = require("../utils/uuid");
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('qrcodetest')
+		.setName('qrcode')
 		.setDescription('Generates a QR code from URL')
 		.addStringOption(option => option.setName('url').setDescription('URL').setRequired(true))
 		.addStringOption(option =>
