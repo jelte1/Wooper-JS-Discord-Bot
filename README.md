@@ -3,6 +3,8 @@
 # WOOPER Discord Bot
 Discord bot made in `Discord.js`, made mostly for browsing Hypixel Skyblock data.
 
+Invite WOOPER: <a href="https://discord.com/oauth2/authorize?client_id=483338160928063498&permissions=2147486784&scope=applications.commands%20bot">link</a>
+
 ## Commands
 
 - **(Hypixel Skyblock) Auctionhouse**
