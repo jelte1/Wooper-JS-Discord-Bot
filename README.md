@@ -32,4 +32,3 @@ Discord bot made in `Discord.js`, made mostly for browsing Hypixel Skyblock data
 - Download the minecraft fonts on your pc and install them
 - Setup .env file
 - Run `npm install`
-- 
