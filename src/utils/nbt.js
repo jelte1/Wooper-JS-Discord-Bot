@@ -1,5 +1,6 @@
 const zlib = require('zlib');
 const nbt = require('nbt');
+const fs = require('fs').promises;
 
 /**
  * Decode, decompress, and parse NBT data
@@ -35,6 +36,22 @@ async function parseNBT(content) {
 async function itemName(content) {
   const data = await parseNBT(content);
   return data?.value?.i?.value?.value?.[0]?.tag?.value?.display?.value?.Name?.value || '[none]';
+}
+
+/**
+ * Extract cleaned item name from NBT data
+ * @param {string} content
+ * @returns {Promise<string>}
+ */
+async function cleanItemName(content) {
+  const data = await parseNBT(content);
+
+  const itemName = data?.value?.i?.value?.value?.[0]?.tag?.value?.ExtraAttributes?.value?.id?.value || '[none]';
+  let cleanedItemName = itemName
+      .replace(/_/g, ' ') // Replace underscores with spaces
+      .replace(/\b\w/g, (char) => char.toUpperCase()) // Capitalize first letter of each word
+      .replace(/\B\w/g, (char) => char.toLowerCase());
+  return cleanedItemName;
 }
 
 /**
@@ -99,6 +116,7 @@ async function inventoryData(content) {
 
 module.exports = {
   itemName,
+  cleanItemName,
   hexCode,
   armorData,
   equipmentData,

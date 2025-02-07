@@ -11,7 +11,7 @@ const SPACING = '\u200b \u200b \u200b \u200b \u200b \u200b \u200b';
 
 /**
  * Generate the "visual" percentage bar for a skill
- * @param percentage
+ * @param percentage - The percentage
  */
 function generatePercentageBar(percentage) {
   const greenCount = Math.floor(percentage / 10);
@@ -21,7 +21,7 @@ function generatePercentageBar(percentage) {
 
 module.exports = {
   data: new SlashCommandBuilder()
-      .setName('skills')
+      .setName('skillstest')
       .setDescription('View Hypixel Skyblock player skills')
       .addStringOption(option =>
           option.setName('username')
@@ -31,6 +31,7 @@ module.exports = {
       .addStringOption(option =>
           option.setName('profile')
               .setDescription('Profile name')
+              .setAutocomplete(true)
       ),
 
   async execute(interaction) {
@@ -115,6 +116,47 @@ module.exports = {
     } catch (error) {
       console.error(error);
       return interaction.reply({ content: "An error occurred while fetching data.", ephemeral: true });
+    }
+  },
+
+  async autocomplete(interaction) {
+    const username = interaction.options.getString('username'); // Get typed username
+
+    if (!username) {
+      return await interaction.respond([]); // Prevent API request spam
+    }
+
+    try {
+      const userUUID = await usernameToUUID(username);
+      const apiUrl = `https://api.hypixel.net/v2/skyblock/profiles?key=${API_KEY}&uuid=${userUUID}`;
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error("Failed to fetch profiles.");
+
+      const data = await response.json();
+
+      if (!data.profiles || data.profiles.length === 0) {
+        return await interaction.respond([]);
+      }
+
+      // Extract profile names
+      const profileNames = data.profiles.map(profile => profile.cute_name);
+
+      // Filter profiles based on user input
+      const focusedValue = interaction.options.getFocused().toLowerCase();
+      const filtered = profileNames
+          .filter(name => name.toLowerCase().includes(focusedValue))
+          .slice(0, 5); // Max 5 results
+
+      // Format response
+      const formattedResults = filtered.map(choice => ({
+        name: choice, // Display in Discord UI
+        value: choice // Store exact profile name
+      }));
+
+      await interaction.respond(formattedResults);
+    } catch (error) {
+      console.error("Autocomplete Error:", error);
+      await interaction.respond([]);
     }
   }
 };

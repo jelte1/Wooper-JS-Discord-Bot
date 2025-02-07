@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, AttachmentBuilder} = require('discord.js');
-const { itemName, hexCode } = require('../utils/nbt.js');
+const { itemName, cleanItemName, hexCode } = require('../utils/nbt.js');
 const generateImage = require('../utils/generateImage.js');
 const fs = require("fs");
 const path = require("path");
@@ -46,24 +46,8 @@ class AuctionCommand {
 		const enchantsString = interaction.options.getString('item-modifiers') ?? '';
 		const enchants = enchantsString.split(',').map(enchant => enchant.trim());
 
-		// Check for data availability
-		if (!cachedAuctionData) {
- 			await interaction.editReply({ content: "Hypixel Auction data unavailable." });
-			return;
-		}
-
-		// Lowercase item and enchants for filtering
-		const lowerItem = item.toLowerCase();
-		const lowerEnchants = enchants.map(enchant => enchant.toLowerCase());
-
-		const auctionsA = cachedAuctionData.filter(auction => {
-			if (!auction.bin) return false;
-			if (!auction.item_name.toLowerCase().includes(lowerItem)) return false;
-			return lowerEnchants.every(enchant => auction.item_lore.toLowerCase().includes(enchant));
-		});
-
-		// Sort by starting bid
-		const sortedAuctions = auctionsA.sort((a, b) => a.starting_bid - b.starting_bid);
+		// Filter and sort auctions (lowercase for case-insensitive search)
+		const sortedAuctions = this.filterAndSortAuctions(cachedAuctionData, item.toLowerCase(), enchants.map(enchant => enchant.toLowerCase()));
 
 		const lowestBinAuction = sortedAuctions[0];
 		data.index = 0;
@@ -118,6 +102,24 @@ class AuctionCommand {
 				// wait
 			}
 		}
+	}
+
+	/**
+	 * Filters and sorts auctions based on item name and enchants.
+	 *
+	 * @param {Array} auctions - The array of auction data.
+	 * @param {string} itemName - The lowercase item name to search for.
+	 * @param {Array} enchants - The lowercase enchants to search for.
+	 * @returns {Array} - The filtered and sorted auctions.
+	 */
+	filterAndSortAuctions(auctions, itemName, enchants) {
+		return auctions
+			.filter(auction => {
+				if (!auction.bin) return false;
+				if (!auction.item_name.toLowerCase().includes(itemName)) return false;
+				return enchants.every(enchant => auction.item_lore.toLowerCase().includes(enchant));
+			})
+			.sort((a, b) => a.starting_bid - b.starting_bid);
 	}
 
 	/**
@@ -251,13 +253,48 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('auctionhousetest')
 		.setDescription('Browse the Hypixel Skyblock auction house.')
-		.addStringOption(option => option.setName('item').setDescription('Item to find on the Auction House').setMaxLength(2000).setRequired(true))
-		.addStringOption(option => option.setName('item-modifiers').setDescription('Modifiers of the item, like the rarity or the enchantments. Separate multiple by comma.').setRequired(false)),
+		.addStringOption(option =>
+			option.setName('item').setDescription('Item to find on the Auction House')
+				.setMaxLength(2000)
+				.setRequired(true)
+				.setAutocomplete(true))
+		.addStringOption(option =>
+			option.setName('item-modifiers')
+				.setDescription('Modifiers of the item, like the rarity or the enchantments. Separate multiple by comma.')
+				.setRequired(false)),
 
 	async execute(interaction) {
 		await interaction.deferReply();
 		const auctionCommand = new AuctionCommand();
 		await auctionCommand.execute(interaction);
+	},
+
+	async autocomplete(interaction) {
+		const focusedValue = interaction.options.getFocused().toLowerCase();
+
+		try {
+			// Load cached auction data
+			const auctions = require('../resources/json/auctionData.json');
+
+			// Extract unique item names from the auction data
+			const itemNames = [...new Set(auctions.map(auction => auction.item_name))];
+
+			// Filter based on user input
+			const filtered = itemNames
+				.filter(item => item.toLowerCase().includes(focusedValue)) // Case-insensitive filtering
+				.slice(0, 5); // Limit to 5 results
+
+			// Format results for display
+			const formattedResults = filtered.map(choice => ({
+				name: choice, // Display in autocomplete dropdown
+				value: choice // Store as selected value
+			}));
+
+			await interaction.respond(formattedResults);
+		} catch (error) {
+			console.error("Autocomplete Error:", error);
+			await interaction.respond([]);
+		}
 	},
 	// Function to be called in main to supply auctionData
 	loadAuctionData,

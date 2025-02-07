@@ -31,9 +31,8 @@ var colorMap = [
   { char: "§k", color: "none" },
 ];
 
-// Arbitrary size
-const tempCanvas = createCanvas(1, 1);
-const tempCtx = tempCanvas.getContext('2d');
+// Convert colorMap to a Map for faster lookups
+const colorLookup = new Map(colorMap.map(entry => [entry.char, entry]));
 
 // Load Minecraft fonts
 const minecraftFont = path.join(__dirname, '..', 'resources/font', 'MinecraftStandard.otf');
@@ -42,127 +41,124 @@ const minecraftBoldFont = path.join(__dirname, '..', 'resources/font', 'Minecraf
 registerFont(minecraftFont, { family: 'Minecraft' });
 registerFont(minecraftBoldFont, { family: 'MinecraftBold' });
 
+// Constants
+const PADDING = 20;
+const BASE_FONT_SIZE = 34;
+const BASE_LINE_SPACING = 20;
+const SHADOW_OFFSET = 4;
+
 /**
- * Generates an image from string of text with Minecraft color codes in Minecraft font.
+ * Measures the width of a line of text, considering Minecraft color codes.
  *
- * @param {string} item_lore - input text containing Minecraft color codes.
- * @returns {Buffer} - generated image as a buffer in PNG format.
+ * @param {CanvasRenderingContext2D} ctx - The canvas context.
+ * @param {string} line - The line of text to measure.
+ * @returns {number} - The width of the line.
+ */
+function measureLineWidth(ctx, line) {
+  const segments = line.split(/(§[a-zA-Z0-9])/);
+  let lineWidth = 0;
+  let isBold = false;
+
+  segments.forEach((segment) => {
+    if (segment.startsWith("§")) {
+      const colorEntry = colorLookup.get(segment);
+      if (colorEntry) {
+        isBold = colorEntry.color === "bold";
+      }
+    } else {
+      ctx.font = `${BASE_FONT_SIZE}px ${isBold ? "MinecraftBold" : "Minecraft"}, sans-serif`;
+      lineWidth += ctx.measureText(segment).width;
+    }
+  });
+
+  return lineWidth;
+}
+
+/**
+ * Renders a line of text onto the canvas, applying Minecraft color codes.
+ *
+ * @param {CanvasRenderingContext2D} ctx - The canvas context.
+ * @param {string} line - The line of text to render.
+ * @param {number} x - The starting x position.
+ * @param {number} y - The starting y position.
+ */
+function renderLine(ctx, line, x, y) {
+  const segments = line.split(/(§[a-zA-Z0-9])/);
+  let currentX = x;
+  let currentColor = colorLookup.get("§f");
+  let isBold = false;
+  let isEmpty = false;
+
+  segments.forEach((segment) => {
+    if (segment.startsWith("§")) {
+      const colorEntry = colorLookup.get(segment);
+      if (colorEntry) {
+        if (colorEntry.color === "bold") {
+          isBold = true;
+        } else if (colorEntry.color === "none") {
+          isEmpty = true;
+        } else {
+          currentColor = colorEntry;
+          isBold = false;
+          isEmpty = false;
+        }
+      }
+    } else if (segment.trim() !== "" && !isEmpty) {
+      ctx.font = `${BASE_FONT_SIZE}px ${isBold ? "MinecraftBold" : "Minecraft"}, sans-serif`;
+
+      // Draw shadow
+      ctx.fillStyle = currentColor.shadow;
+      ctx.fillText(segment, currentX + SHADOW_OFFSET, y + SHADOW_OFFSET);
+
+      // Draw text
+      ctx.fillStyle = currentColor.color;
+      ctx.fillText(segment, currentX, y);
+
+      // Update x position
+      currentX += ctx.measureText(segment).width;
+    }
+  });
+}
+
+/**
+ * Generates an image from a string of text with Minecraft color codes in Minecraft font.
+ *
+ * @param {string} item_lore - Input text containing Minecraft color codes.
+ * @returns {Buffer} - Generated image as a buffer in PNG format.
  */
 function generateImage(item_lore) {
-  // Padding around text
-  const padding = 20;
-  // Font size for text
-  const baseFontSize = 34;
-  // Extra space between lines
-  const baseLineSpacing = 20;
-
   const lines = item_lore.split('\n');
 
   // Temporary canvas for text measurement
   const tempCanvas = createCanvas(1, 1);
   const tempCtx = tempCanvas.getContext('2d');
 
+  // Measure maximum text width and total height
   let maxTextWidth = 0;
-
-  // Measure text width and height for each line
   lines.forEach((line) => {
-    const segments = line.split(/(§[a-zA-Z0-9])/);
-    let lineWidth = 0;
-    let isBold = false;
-
-    // Measure text width for each line and get the maximum width for the canvas
-    segments.forEach((segment) => {
-      if (segment.startsWith("§")) {
-        const colorEntry = colorMap.find((entry) => entry.char === segment);
-        if (colorEntry) {
-          isBold = colorEntry.color === "bold";
-        }
-      } else {
-        tempCtx.font = `${baseFontSize}px ${isBold ? "MinecraftBold" : "Minecraft"}, sans-serif`;
-        const metrics = tempCtx.measureText(segment);
-
-        // Measure line width
-        lineWidth += metrics.width;
-
-      }
-    });
-
-    // Update max text width and total height
+    const lineWidth = measureLineWidth(tempCtx, line);
     maxTextWidth = Math.max(maxTextWidth, lineWidth);
   });
 
-  // Calculate canvas dimensions
-  const canvasWidth = Math.ceil(maxTextWidth + padding * 2); // Add horizontal padding
-  let totalHeight = lines.length * (baseFontSize + baseLineSpacing)
-  // Add vertical padding
-  const canvasHeight = Math.ceil(totalHeight + padding * 2);
+  const canvasWidth = Math.ceil(maxTextWidth + PADDING * 2);
+  const totalHeight = lines.length * (BASE_FONT_SIZE + BASE_LINE_SPACING);
+  const canvasHeight = Math.ceil(totalHeight + PADDING * 2);
 
   // Create canvas
   const canvas = createCanvas(canvasWidth, canvasHeight);
-  // Get canvas context
   const ctx = canvas.getContext('2d');
 
   // Set background color
   ctx.fillStyle = '#120714FF';
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-  // Initial vertical position with padding
-  let verticalPos = padding + 45;
-
   // Render text line by line
+  let verticalPos = PADDING + 45;
   lines.forEach((line) => {
-    if (line.trim() === "") {
-      // Empty line: move y position
-      verticalPos += baseFontSize + baseLineSpacing;
-      return;
+    if (line.trim() !== "") {
+      renderLine(ctx, line, PADDING, verticalPos);
     }
-
-    // Split line into segments with color codes
-    const segments = line.split(/(§[a-zA-Z0-9])/);
-    // Initial horizontal position
-    let horizontalPos = padding;
-    // Default color
-    let currentColor = colorMap.find((entry) => entry.char === "§f");
-    let isBold = false;
-    let isEmpty = false;
-
-    segments.forEach((segment) => {
-      if (segment.startsWith("§")) {
-        const colorEntry = colorMap.find((entry) => entry.char === segment);
-        if (colorEntry) {
-          if (colorEntry.color === "bold") {
-            isBold = true;
-            // Skip if color is none
-          } else if (colorEntry.color === "none") {
-            isEmpty = true;
-          } else {
-            currentColor = colorEntry;
-            isBold = false;
-            isEmpty = false;
-          }
-        }
-      } else if (segment.trim() !== "") {
-        // Skip if color is none
-        if (isEmpty) {
-          return;
-        }
-        ctx.font = `${baseFontSize}px ${isBold ? "MinecraftBold" : "Minecraft"}, sans-serif`;
-        // Draw shadow
-        ctx.fillStyle = currentColor.shadow;
-        // Shadow offset
-        ctx.fillText(segment, horizontalPos + 4, verticalPos + 4);
-
-        // Draw text
-        ctx.fillStyle = currentColor.color;
-        ctx.fillText(segment, horizontalPos, verticalPos);
-
-        // Move x position for next segment
-        horizontalPos += ctx.measureText(segment).width;
-      }
-    });
-
-    // Move y position for next line
-    verticalPos += baseFontSize + baseLineSpacing;
+    verticalPos += BASE_FONT_SIZE + BASE_LINE_SPACING;
   });
 
   return canvas.toBuffer('image/png');

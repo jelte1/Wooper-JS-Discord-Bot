@@ -30,10 +30,39 @@ async function registerCommands(rest, commands) {
     const commandData = commands.map(command => command.data.toJSON());
     console.log(`Refreshing ${commandData.length} application (/) commands...`);
     const data = await rest.put(
-        Routes.applicationCommands(process.env.DISCORD_APPLICATION_ID),
+        Routes.applicationGuildCommands(process.env.DISCORD_APPLICATION_ID, process.env.DISCORD_GUILD_ID), // Uncomment the second argument to register commands in a specific guild
         { body: commandData }
     );
     console.log(`Successfully registered ${data.length} commands.`);
+}
+
+/**
+ * Deletes all global commands.
+ * @param rest - The REST client.
+ */
+async function deleteGlobalCommands(rest) {
+    try {
+        console.log('Deleting all global commands...');
+        await rest.put(Routes.applicationCommands(process.env.DISCORD_APPLICATION_ID), { body: [] });
+        console.log('Successfully deleted all global commands.');
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+/**
+ * Deletes all commands in a specific guild
+ * @param rest - The REST client
+ * @param guildId - The guild ID to delete commands from
+ */
+async function deleteGuildCommands(rest, guildId) {
+    try {
+        console.log(`Deleting all commands in guild ${guildId}...`);
+        await rest.put(Routes.applicationGuildCommands(process.env.DISCORD_APPLICATION_ID, guildId), { body: [] });
+        console.log(`Successfully deleted all commands in guild ${guildId}.`);
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 /**
@@ -61,4 +90,4 @@ function updateStatus(client, startTime, uptimeData, uptimeFilePath) {
     }
 }
 
-module.exports = { loadCommands, registerCommands, updateStatus };
+module.exports = { loadCommands, registerCommands, deleteGuildCommands, updateStatus };

@@ -9,7 +9,7 @@ let playerData = [];
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('slots')
+        .setName('slotstest')
         .setDescription('Gamble using a slot machine!')
         .addIntegerOption(option => option.setName('amount').setDescription('Amount of money to gamble.').setRequired(true)),
 
@@ -25,6 +25,11 @@ module.exports = {
         const defaultCoins = 100;
         // Get the user's ID
         const userId = interaction.user.id;
+
+        // Ensure user exists in the data
+        if (!playerData[userId]) {
+            playerData[userId] = { coins: defaultCoins };
+        }
 
         // Get the user's coins
         let coins = playerData[userId] ? playerData[userId].coins : defaultCoins;
@@ -63,7 +68,7 @@ module.exports = {
                 .setTitle('Rolling...')
                 .setDescription(topRow + '```' + result.join(' | ') + '```' + bottomRow)
                 .setColor('#96C7E1');
-            if (counter == 0) {
+            if (counter === 0) {
                 initialMessage = await interaction.reply({ embeds: [updateEmbed], fetchReply: true });
             } else {
                 await initialMessage.edit({ embeds: [updateEmbed] });
