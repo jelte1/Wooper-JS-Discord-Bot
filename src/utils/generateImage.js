@@ -48,6 +48,50 @@ const BASE_LINE_SPACING = 20;
 const SHADOW_OFFSET = 4;
 
 /**
+ * Generates an image from a string of text with Minecraft color codes in Minecraft font.
+ *
+ * @param {string} item_lore - Input text containing Minecraft color codes.
+ * @returns {Buffer} - Generated image as a buffer in PNG format.
+ */
+function generateImage(item_lore) {
+  const lines = item_lore.split('\n');
+
+  // Temporary canvas for text measurement
+  const tempCanvas = createCanvas(1, 1);
+  const tempCtx = tempCanvas.getContext('2d');
+
+  // Measure maximum text width and total height
+  let maxTextWidth = 0;
+  lines.forEach((line) => {
+    const lineWidth = measureLineWidth(tempCtx, line);
+    maxTextWidth = Math.max(maxTextWidth, lineWidth);
+  });
+
+  const canvasWidth = Math.ceil(maxTextWidth + PADDING * 2);
+  const totalHeight = lines.length * (BASE_FONT_SIZE + BASE_LINE_SPACING);
+  const canvasHeight = Math.ceil(totalHeight + PADDING * 2);
+
+  // Create canvas
+  const canvas = createCanvas(canvasWidth, canvasHeight);
+  const ctx = canvas.getContext('2d');
+
+  // Set background color
+  ctx.fillStyle = '#120714FF';
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+  // Render text line by line
+  let verticalPos = PADDING + 45;
+  lines.forEach((line) => {
+    if (line.trim() !== "") {
+      renderLine(ctx, line, PADDING, verticalPos);
+    }
+    verticalPos += BASE_FONT_SIZE + BASE_LINE_SPACING;
+  });
+
+  return canvas.toBuffer('image/png');
+}
+
+/**
  * Measures the width of a line of text, considering Minecraft color codes.
  *
  * @param {CanvasRenderingContext2D} ctx - The canvas context.
@@ -118,50 +162,6 @@ function renderLine(ctx, line, x, y) {
       currentX += ctx.measureText(segment).width;
     }
   });
-}
-
-/**
- * Generates an image from a string of text with Minecraft color codes in Minecraft font.
- *
- * @param {string} item_lore - Input text containing Minecraft color codes.
- * @returns {Buffer} - Generated image as a buffer in PNG format.
- */
-function generateImage(item_lore) {
-  const lines = item_lore.split('\n');
-
-  // Temporary canvas for text measurement
-  const tempCanvas = createCanvas(1, 1);
-  const tempCtx = tempCanvas.getContext('2d');
-
-  // Measure maximum text width and total height
-  let maxTextWidth = 0;
-  lines.forEach((line) => {
-    const lineWidth = measureLineWidth(tempCtx, line);
-    maxTextWidth = Math.max(maxTextWidth, lineWidth);
-  });
-
-  const canvasWidth = Math.ceil(maxTextWidth + PADDING * 2);
-  const totalHeight = lines.length * (BASE_FONT_SIZE + BASE_LINE_SPACING);
-  const canvasHeight = Math.ceil(totalHeight + PADDING * 2);
-
-  // Create canvas
-  const canvas = createCanvas(canvasWidth, canvasHeight);
-  const ctx = canvas.getContext('2d');
-
-  // Set background color
-  ctx.fillStyle = '#120714FF';
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-  // Render text line by line
-  let verticalPos = PADDING + 45;
-  lines.forEach((line) => {
-    if (line.trim() !== "") {
-      renderLine(ctx, line, PADDING, verticalPos);
-    }
-    verticalPos += BASE_FONT_SIZE + BASE_LINE_SPACING;
-  });
-
-  return canvas.toBuffer('image/png');
 }
 
 module.exports = generateImage;

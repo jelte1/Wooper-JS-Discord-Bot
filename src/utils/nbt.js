@@ -105,7 +105,7 @@ async function inventoryData(content) {
 
   return items
       .filter(item => item?.tag?.value?.display?.value?.Name?.value)
-      .filter(item => !item.tag.value.display.value.Name.value.includes("§aSkyBlock Menu §7(Click)")) // Exclude specific items
+      .filter(item => !item.tag.value.display.value.Name.value.includes("§aSkyBlock Menu §7(Click)")) // Exclude sb menu
       .map(item => {
         const name = item.tag.value.display.value.Name.value;
         const count = item.Count?.value > 1 ? `\`x${item.Count.value}\`` : '';

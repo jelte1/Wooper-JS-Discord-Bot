@@ -45,7 +45,7 @@ client.on(Events.InteractionCreate, async interaction => {
       await command.execute(interaction);
     } catch (error) {
       console.error(error);
-      await interaction.reply({ content: '❌ There was an error executing this command!', ephemeral: true });
+      await interaction.reply({ content: 'Error executing command.', ephemeral: true });
     }
   } else if (interaction.isAutocomplete()) {
     // Handle Autocomplete
@@ -68,7 +68,7 @@ let uptimeData = fs.existsSync(uptimeFilePath)
 let startTime;
 
 /**
- * Update status every minute
+ * Updates
  */
 client.on("ready", async () => {
   console.log(`Logged in as ${client.user.tag}`);
@@ -76,7 +76,7 @@ client.on("ready", async () => {
 
   await loadAuctionData();
   setInterval(() => updateStatus(client, startTime, uptimeData, uptimeFilePath), 60_000);
-  setInterval(() => fetchAuctionData(), 300_000);
+  setInterval(async () => await fetchAuctionData(), 300_000);
 });
 
 // Load player data

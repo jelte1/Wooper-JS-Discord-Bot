@@ -7,12 +7,13 @@ const fetch = require("node-fetch");
  * @returns {Promise<string>} The UUID of the user.
  */
 async function usernameToUUID(username) {
-    const response = await fetch(`https://api.mojang.com/users/profiles/minecraft/${username}`);
     try {
+        const response = await fetch(`https://api.mojang.com/users/profiles/minecraft/${username}`);
         const data = await response.json();
         return data.id;
     } catch (error) {
         console.log("Unknown username.");
+        await usernameToUUID(username);
     }
 }
 
@@ -23,12 +24,13 @@ async function usernameToUUID(username) {
  * @returns {Promise<string>} The username of the user.
  */
 async function uuidToUsername(uuid) {
-    const response = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${uuid}`);
     try {
+        const response = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${uuid}`);
         const data = await response.json();
         return data.name;
     } catch (error) {
         console.log("Unknown UUID.");
+        await uuidToUsername(uuid);
     }
 }
 

@@ -177,9 +177,9 @@ class AuctionCommand {
 				.setTitle(`Auction: ${auction.item_name}`)
 				.setColor(colors[rarity])
 				.addFields(
-					{name: 'Seller', value: `${sellerName ?? '```Error retrieving user```'}`, inline: true},
-					{name: 'BIN', value: `${formattedPrice} coins`, inline: true},
-					{name: 'Ends/Ended', value: `<t:${unixEndTime}:R>`, inline: true})
+					{name: '<a:ench_book:1337560694375186554> Seller', value: `${sellerName ?? '```Error retrieving user```'}`, inline: true},
+					{name: '<a:ench_gold_block:1337558260021985290> BIN', value: `${formattedPrice} coins`, inline: true},
+					{name: '<a:ench_clock:1337559964226682890> Ends/Ended', value: `<t:${unixEndTime}:R>`, inline: true})
 				.setImage(attachmentUrl)
 				.setTimestamp()
 				.setFooter({
